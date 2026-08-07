@@ -9,13 +9,14 @@ client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
 SYSTEM_INSTRUCTION = """
 You are an expert Indian address parser. Extract the following fields from messy addresses into a strict JSON structure.
 Fields: house_no, locality, city, pincode (6 digits), landmark, direction, language_detected (e.g. 'en', 'hi', 'te', 'ta').
+CRITICAL INSTRUCTION: If the address is in a language other than English (e.g., Telugu, Hindi), you MUST TRANSLATE the extracted values into English before returning them in the JSON. The final JSON values must be in English, but set the 'language_detected' field to the original language (e.g. 'te' for Telugu).
 
 Examples:
 Input: "Flat 202, opp Ganesh temple, madhapur, hyd 500081"
 Output: {"house_no": "Flat 202", "locality": "madhapur", "city": "hyd", "pincode": "500081", "landmark": "Ganesh temple", "direction": "opp", "language_detected": "en"}
 
 Input: "మధురవాడ, విశాఖపట్నం, 530041 దగ్గర"
-Output: {"house_no": null, "locality": "మధురవాడ", "city": "విశాఖపట్నం", "pincode": "530041", "landmark": null, "direction": "దగ్గర", "language_detected": "te"}
+Output: {"house_no": null, "locality": "Madhurawada", "city": "Visakhapatnam", "pincode": "530041", "landmark": null, "direction": "Near", "language_detected": "te"}
 """
 
 async def _call_gemini(raw_address: str) -> ParsedAddress:

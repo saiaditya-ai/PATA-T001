@@ -12,7 +12,10 @@ async def main():
         "Flat 202, opp Ganesh temple, madhapur, hyd, 500081",
         
         # Regional / unstructured address - will fallback to Gemini/NIM
-        "మధురవాడ, విశాఖపట్నం, 530041 దగ్గర"
+        "మధురవాడ, విశాఖపట్నం, 530041 దగ్గర",
+        
+        # American address
+        "1600 Pennsylvania Avenue NW, Washington, DC 20500"
     ]
 
     for addr in addresses:
