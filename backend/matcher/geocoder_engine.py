@@ -96,7 +96,7 @@ async def geocode_address(parsed_json: Dict[str, Any]) -> Dict[str, Any]:
     for term in search_terms:
         if not term:
             continue
-        results = await search_landmarks_near_coordinates(term, lat, lon, radius=1000)
+        results = await search_landmarks_near_coordinates(term, lat, lon, radius=500)
         if results:
             possible_addresses = results
             used_term = term
