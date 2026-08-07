@@ -1,0 +1,8 @@
+.venv
+venv
+env
+__pycache__
+*.pyc
+.env
+data/osm_landmarks_cache.json
+data/pincodes_clean.csv

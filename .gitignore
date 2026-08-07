@@ -1,0 +1,29 @@
+BACKEND_PROMPT.md
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.env
+
+# Node
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Large Data Files (Ignore cache and large CSVs, track test data if needed)
+backend/data/osm_landmarks_cache.json
+backend/data/pincodes_clean.csv
