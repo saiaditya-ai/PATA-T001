@@ -2,10 +2,10 @@ import os
 import pandas as pd
 from typing import Optional, Tuple
 
-class PincodeDB:
+class PincodeLocator:
     def __init__(self, csv_path: str):
         """
-        Initializes the PincodeDB and loads the CSV data.
+        Initializes the PincodeLocator and loads the CSV data.
         """
         self.csv_path = csv_path
         self._df = None
@@ -49,6 +49,6 @@ class PincodeDB:
 
         return (float(mean_lat), float(mean_lon))
 
-# Singleton loader
+# Instance to be imported
 CSV_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'all_india_pincode_directory_2025.csv')
-pincode_db = PincodeDB(CSV_PATH)
+pincode_locator = PincodeLocator(CSV_PATH)
