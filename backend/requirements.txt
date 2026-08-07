@@ -6,3 +6,4 @@ openai
 pandas
 httpx
 pydantic
+python-dotenv
