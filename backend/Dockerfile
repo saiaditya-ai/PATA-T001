@@ -1,25 +1,6 @@
 FROM python:3.11-slim
 
-# Install system dependencies required for libpostal and building Python packages
-RUN apt-get update && apt-get install -y \
-    curl \
-    autoconf \
-    automake \
-    libtool \
-    pkg-config \
-    build-essential \
-    git \
-    && rm -rf /var/lib/apt/lists/*
-
-# Clone and install libpostal from source
-# NOTE: This step will download ~2GB of machine learning training data during configuration
-RUN git clone https://github.com/openvenues/libpostal /opt/libpostal \
-    && cd /opt/libpostal \
-    && ./bootstrap.sh \
-    && ./configure --datadir=/opt/libpostal_data \
-    && make -j$(nproc) \
-    && make install \
-    && ldconfig
+# Libpostal installation removed for faster builds on other systems
 
 # Set up the Python application
 WORKDIR /app

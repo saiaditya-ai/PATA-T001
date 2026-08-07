@@ -1,5 +1,6 @@
 fastapi
 uvicorn
+postal
 google-genai
 openai
 pandas
