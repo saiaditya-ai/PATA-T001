@@ -3,6 +3,8 @@
 Pata AI is an Evidence-Driven Address Intelligence Engine tailored specifically for last-mile delivery in India. The system handles the complexities of Indian address formats—such as colloquial area names, localized landmarks, mixed scripts, and missing postal codes—by executing a 3-tier address parsing cascade alongside evidence-based geo-matching and automated confidence scoring.
 
 ---
+<img width="2720" height="1440" alt="pata_mvp_architecture" src="https://github.com/user-attachments/assets/eeb13221-f16e-4bec-99dc-cbc4f2dc5db5" />
+
 
 ## System Architecture and Workflow
 
@@ -42,6 +44,8 @@ The system processes incoming unstructured address strings through a sequential 
 ```
 
 ### Detailed Execution Flow
+<img width="1408" height="768" alt="workflow" src="https://github.com/user-attachments/assets/49dbf697-b363-4482-9ae3-61d0e88b46bf" />
+
 
 1. **Step 1: 3-Tier Address Parsing Cascade (`backend/parsers/`)**
    - **Primary (`libpostal_parser.py`):** Fast C-based statistical parser used as the first line of defense to extract structural elements (house numbers, road, area, city, pincode).
