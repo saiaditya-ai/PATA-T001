@@ -16,9 +16,9 @@ The system processes incoming unstructured address strings through a sequential 
          ▼
 ┌────────────────────────────────────────────────────────┐
 │ Step 1: 3-Tier Address Parsing Cascade                 │
-│ 1. libpostal (Primary C-based Parser)                  │
+│ 1. libpostal (Primary C-based Parser - Optional)       │
 │ 2. Gemini Flash (Secondary Indic-Aware LLM Fallback)   │
-│ 3. NVIDIA NIM (Tertiary Enterprise LLM Fallback)       │
+│ 3. Local Model (LM Studio - Tertiary LLM Fallback)     │
 └────────────────────────┬───────────────────────────────┘
                          │ Parsed Components
                          ▼
@@ -48,10 +48,10 @@ The system processes incoming unstructured address strings through a sequential 
 
 
 1. **Step 1: 3-Tier Address Parsing Cascade (`backend/parsers/`)**
-   - **Primary (`libpostal_parser.py`):** Fast C-based statistical parser used as the first line of defense to extract structural elements (house numbers, road, area, city, pincode).
-   - **Secondary (`gemini_flash_parser.py`):** Invoked if `libpostal` parsing is incomplete or fails. Utilizes Google Gemini Flash for Indic-aware contextual parsing.
-   - **Tertiary (`nvidia_nim_parser.py`):** High-reliability enterprise LLM fallback triggered if secondary parsing fails.
-   - **Orchestration (`parser_orchestrator.py`):** Controls the fallback cascade logic and ensures performance sub-500ms bounds.
+   - **Primary (`libpostal_parser.py`):** Fast C-based statistical parser used as the first line of defense to extract structural elements (house numbers, road, area, city, pincode). *Note: This tier gracefully skips itself if libpostal is not installed (e.g., in our fast Docker setup).*
+   - **Secondary (`gemini_flash_parser.py`):** Invoked if `libpostal` parsing fails or is skipped. Utilizes Google Gemini Flash for Indic-aware contextual parsing. **It automatically translates regional languages (Telugu, Hindi, etc.) into English.**
+   - **Tertiary (`local_parser.py`):** High-reliability local LLM fallback (e.g., running via LM Studio) triggered if secondary parsing fails. Also enforces English translation.
+   - **Orchestration (`parser_orchestrator.py`):** Controls the fallback cascade logic and ensures graceful degradation.
 
 2. **Step 2: Ground Truth & Landmark Geocoding (`backend/matcher/`)**
    - **Pincode Reference (`pincode_db.py`):** Singleton loader accessing `data/pincodes_clean.csv` to resolve pincodes to base latitude, longitude, district, state, and area lists.
@@ -88,10 +88,10 @@ PATA-T001/
 │   │
 │   ├── parsers/                 # STEP 1: 3-Tier Address Parser Cascade
 │   │   ├── __init__.py
-│   │   ├── parser_orchestrator.py # Manages fallback: libpostal -> Gemini Flash -> NVIDIA NIM
+│   │   ├── parser_orchestrator.py # Manages fallback: libpostal -> Gemini Flash -> Local Model
 │   │   ├── libpostal_parser.py    # Primary C-based parser
-│   │   ├── gemini_flash_parser.py # Secondary Indic-aware LLM fallback
-│   │   └── nvidia_nim_parser.py   # Tertiary enterprise LLM fallback
+│   │   ├── gemini_flash_parser.py # Secondary Indic-aware LLM fallback (with translation)
+│   │   └── local_parser.py        # Tertiary Local LLM fallback via LM Studio
 │   │
 │   ├── matcher/                 # STEP 2: Ground Truth & Landmark Geocoding
 │   │   ├── __init__.py
@@ -168,7 +168,8 @@ The backend is built with FastAPI and runs all parsing, geocoding, and confidenc
    Set your API keys inside `backend/.env`:
    ```env
    GEMINI_API_KEY=your_gemini_api_key_here
-   NVIDIA_NIM_API_KEY=your_nvidia_nim_api_key_here
+   LOCAL_API_BASE=http://127.0.0.1:1234/v1/
+   LOCAL_MODEL=qwen2.5-coder-1.5b-instruct-mlx
    ```
 
 4. **Run the Backend Server:**
@@ -200,10 +201,17 @@ The frontend is an interactive UI built with React and Vite.
 
 ### 4. Running with Docker Compose
 
-To build and launch both backend (including libpostal dependencies) and frontend services in containers:
+We provide a highly-optimized, lightweight default Docker setup that skips the heavy 2GB `libpostal` C-library installation. It relies purely on the Gemini and Local LLM tiers for parsing, making builds blazing fast!
 
 ```bash
 docker-compose up --build
+```
+
+#### Running with full libpostal (Optional)
+If you require the Tier 1 C-parser inside Docker, we preserved the original configuration files:
+```bash
+cd backend
+docker build -f Dockerfile.full -t pata-backend-full .
 ```
 
 ---
