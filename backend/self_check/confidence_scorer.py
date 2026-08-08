@@ -1,4 +1,5 @@
 import math
+import re
 from typing import Dict, Any, List, Optional, Tuple
 
 def _haversine_meters(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -35,16 +36,35 @@ def _score_candidate(
 
     # --- 2. Name relevance score (0.0 – 0.35) ---
     name = candidate.get("name", "").lower()
+    
+    input_locality = (input_address.get("locality") or "").lower()
+    input_landmark = (input_address.get("landmark") or "").lower()
+    input_house = (input_address.get("house_no") or "").lower()
+    
+    target_string = f"{input_locality} {input_landmark} {input_house}".strip()
+    
     name_score = 0.0
     matched_term = None
-    for term in search_terms:
-        words = [w for w in term.lower().split() if len(w) > 2]
-        hits = sum(1 for w in words if w in name)
-        if words:
-            ratio = hits / len(words)
-            if ratio > name_score:
-                name_score = ratio
-                matched_term = term
+    
+    if target_string:
+        # Split target into meaningful words, removing punctuation
+        target_words = [w for w in re.sub(r'[^\w\s]', '', target_string).split() if len(w) > 1]
+        
+        total_weight = 0.0
+        hits_weight = 0.0
+        
+        for w in target_words:
+            # Give 2x weight to words containing digits (e.g., '1st', '5th', '7th')
+            weight = 2.0 if any(c.isdigit() for c in w) else 1.0
+            total_weight += weight
+            
+            if w in name:
+                hits_weight += weight
+                
+        if total_weight > 0:
+            name_score = hits_weight / total_weight
+            matched_term = target_string
+            
     name_score *= 0.35
 
     # --- 3. Pincode match score (0.0 – 0.15) ---
