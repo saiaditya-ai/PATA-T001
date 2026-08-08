@@ -24,8 +24,8 @@ The system processes incoming unstructured address strings through a sequential 
                          ▼
 ┌────────────────────────────────────────────────────────┐
 │ Step 2: Ground Truth & Landmark Geocoding              │
-│ - Pincode Database Lookup (Lat/Long, Area Mapping)     │
-│ - Overpass OSM POI Search (Landmark & Area Matching)   │
+│ - Dynamic OSM Pincode Boundary Fetching            │
+│ - Nominatim POI Search within Strict Geofence      │
 └────────────────────────┬───────────────────────────────┘
                          │ Matched Geo Data
                          ▼
@@ -54,8 +54,8 @@ The system processes incoming unstructured address strings through a sequential 
    - **Orchestration (`parser_orchestrator.py`):** Controls the fallback cascade logic and ensures graceful degradation.
 
 2. **Step 2: Ground Truth & Landmark Geocoding (`backend/matcher/`)**
-   - **Pincode Reference (`pincode_db.py`):** Singleton loader accessing `data/pincodes_clean.csv` to resolve pincodes to base latitude, longitude, district, state, and area lists.
-   - **Landmark Geocoding (`geocoder_engine.py` & `osm_client.py`):** Cross-references extracted area and landmark entities against pre-cached Overpass OpenStreetMap (OSM) POI data (`data/osm_landmarks_cache.json`) to establish precise spatial coordinates.
+   - **Pincode Boundary Fetching (`pincode_db.py` & `osm_client.py`):** First checks Nominatim to dynamically retrieve the exact real-world polygonal bounding box for the given pincode. Falls back to a local `pincodes_clean.csv` if the API fails.
+   - **Landmark Geocoding (`geocoder_engine.py` & `osm_client.py`):** Cross-references extracted area and landmark entities against OpenStreetMap (OSM) via the Nominatim API, strictly bounded (geofenced) by the exact pincode boundaries to ensure it never returns results from neighboring cities.
 
 3. **Step 3: Confidence Scoring & Evidence Justification (`backend/self_check/`)**
    - **Confidence Scoring (`confidence_scorer.py`):** Calculates a deterministic confidence score based on parsing completeness, pincode validity, landmark proximity, and spatial delta.
@@ -95,9 +95,9 @@ PATA-T001/
 │   │
 │   ├── matcher/                 # STEP 2: Ground Truth & Landmark Geocoding
 │   │   ├── __init__.py
-│   │   ├── pincode_db.py          # Singleton loader for pincodes_clean.csv
-│   │   ├── geocoder_engine.py     # Combines Pincode lookup with OSM landmark search
-│   │   └── osm_client.py          # Async client for cached Overpass OSM POI lookups
+│   │   ├── pincode_db.py          # Fallback loader for pincodes_clean.csv
+│   │   ├── geocoder_engine.py     # Uses Dynamic Boundaries + OSM Landmark Search
+│   │   └── osm_client.py          # Async client for Nominatim POI and Boundary lookups
 │   │
 │   ├── self_check/              # STEP 3: Confidence Scoring & Evidence Justification
 │   │   ├── __init__.py
@@ -105,8 +105,7 @@ PATA-T001/
 │   │   └── evidence_agent.py      # LLM call to generate driver-facing justification text
 │   │
 │   ├── data/
-│   │   ├── pincodes_clean.csv     # Kaggle All-India Pincode Directory CSV
-│   │   ├── osm_landmarks_cache.json# Pre-fetched Overpass POI data
+│   │   ├── pincodes_clean.csv     # Kaggle All-India Pincode Directory CSV (Fallback)
 │   │   └── test_addresses.json    # Handcrafted evaluation dataset
 │   │
 │   ├── models/
