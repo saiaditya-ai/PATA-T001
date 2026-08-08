@@ -1,7 +1,7 @@
 import re
+import math
 from typing import Dict, Any, List
 from .pincode_db import pincode_db
-from .osm_client import search_landmarks_near_coordinates
 
 # Common positional/directional words to strip before landmark extraction
 _DIRECTIONAL = re.compile(
@@ -56,9 +56,9 @@ def extract_search_terms(locality: str, landmark: str) -> List[str]:
 
 async def geocode_address(parsed_json: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Executes Step 2: Ground Truth and Landmark Geocoding.
-    Resolves base coordinates via Pincode DB and searches for precise POIs via Nominatim.
-    Outputs the payload to be passed to Step 3.
+    Executes Step 2: Ground Truth and Geocoding.
+    Since OSM results are unreliable for hyper-local Indian addresses, we rely purely 
+    on the parser's extraction and resolve to the pincode base coordinates.
     """
     pincode = parsed_json.get("pincode")
     locality = parsed_json.get("locality")
@@ -83,31 +83,27 @@ async def geocode_address(parsed_json: Dict[str, Any]) -> Dict[str, Any]:
 
     lat, lon = coords
 
-    # Build ordered search terms (specific -> broad)
+    # Build ordered search terms (for downstream reference if needed)
     search_terms = extract_search_terms(locality, landmark)
-
-    # Add city as the broadest fallback context
     if city:
         search_terms.append(_clean(city))
 
-    possible_addresses = []
-    used_term = None
-
-    for term in search_terms:
-        if not term:
-            continue
-        results = await search_landmarks_near_coordinates(term, lat, lon, radius=500)
-        if results:
-            possible_addresses = results
-            used_term = term
-            break
+    # Rely purely on Gemini parsing + Pincode base lat/lon, skipping OSM
+    # The output format is preserved for compatibility with downstream processes.
+    pincode_candidate = {
+        "name": f"{pincode} General Area",
+        "type": "pincode",
+        "osm_type": "node",
+        "coordinates": {"latitude": lat, "longitude": lon},
+        "address": {"postcode": pincode, "city": city or ""}
+    }
 
     return {
         "status": "success",
         "base_coordinates": {"latitude": lat, "longitude": lon},
         "search_radius_meters": 1000,
         "search_terms_tried": search_terms,
-        "matched_on_term": used_term,
-        "possible_addresses": possible_addresses,
+        "matched_on_term": "pincode_fallback",
+        "possible_addresses": [pincode_candidate],
         "input_address": parsed_json
     }

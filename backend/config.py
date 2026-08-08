@@ -8,7 +8,7 @@ LOCAL_API_BASE = os.getenv("LOCAL_API_BASE", "http://127.0.0.1:1234/v1/")
 
 # Timeout and latency thresholds
 LATENCY_LIMIT_MS = int(os.getenv("LATENCY_LIMIT_MS", "1000"))
-GEMINI_TIMEOUT_SECONDS = 0.5 # 500ms
+GEMINI_TIMEOUT_SECONDS = 0.5 # 1500ms
 LOCAL_TIMEOUT_SECONDS = 2 # Local models might be slower
 
 # Models
