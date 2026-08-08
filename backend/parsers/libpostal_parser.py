@@ -30,8 +30,9 @@ def parse(raw_address: str) -> ParsedAddress:
     landmark = result_dict.get('landmark', None)
     
     # Fallback criteria: If we have no pincode AND no locality/road AND no city, we consider the parse too weak.
-    if not pincode and not locality and not city:
-        raise ParserFallbackError("libpostal could not extract sufficient locality, city, or pincode.")
+    # Also fallback if no landmark was extracted, as landmarks are crucial for our geocoding.
+    if (not pincode and not locality and not city) or not landmark:
+        raise ParserFallbackError("libpostal could not extract sufficient details (missing landmark, or missing locality/city/pincode).")
         
     return ParsedAddress(
         house_no=house_no,
