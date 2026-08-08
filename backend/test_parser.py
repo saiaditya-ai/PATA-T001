@@ -9,7 +9,13 @@ async def main():
 
     addresses = [
         # Clean english address - will be caught by libpostal
-        "42-2/1-206/1A, 3rd right, 5th line, Devinagar, Vijayawada, 520003"
+        "42-2/1-206/1A, 3rd right, 5th line, Devinagar, Vijayawada, 520003",
+        
+        # Regional / unstructured address - will fallback to Gemini/NIM
+        "మధురవాడ, విశాఖపట్నం, 530041 దగ్గర",
+        
+        # American address
+        "1600 Pennsylvania Avenue NW, Washington, DC 20500"
     ]
 
     for addr in addresses:
