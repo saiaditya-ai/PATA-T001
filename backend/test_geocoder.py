@@ -19,9 +19,9 @@ from self_check.evidence_agent import generate_justification
 
 # Test address: near Tagore Bomma Centre, Arundelpet, Guntur
 payload = {
-  "house_no": "42-2/1-206/1a",
-  "locality": "3rd right 5th line",
-  "city": "devinagar vijayawada",
+  "house_no": None,
+  "locality": "5th line, Devinagar",
+  "city": "Vijayawada",
   "pincode": "520003",
   "landmark": None,
   "direction": None,
@@ -56,11 +56,10 @@ async def test_osm_client():
     coords = pincode_db.get_coordinates(payload["pincode"])
     if not coords:
         print(f"[FAIL] Could not resolve pincode {payload['pincode']}")
-        return
+        print("=======================================================")
     lat, lon = coords
-    terms = extract_search_terms(payload.get("locality"), payload.get("landmark"))
-    if payload.get("city"):
-        terms.append(payload["city"])
+    terms = extract_search_terms(payload.get("house_no"), payload.get("locality"), payload.get("landmark"), payload.get("city"))
+    print(f"Extracted search terms (descending specificity):")
 
     print(f"  Pincode {payload['pincode']} -> lat={lat:.4f}, lon={lon:.4f}")
     for t in terms:
@@ -91,7 +90,8 @@ async def test_full_pipeline():
 
     # Step 3a: Score
     scored = rank_candidates(geocoder_output)
-    print(f"  Step 3a done: best='{scored.get('best_match', {}).get('name', 'None')[:60]}' "
+    best_match = scored.get('best_match') or {}
+    print(f"  Step 3a done: best='{best_match.get('name', 'None')[:60]}' "
           f"score={scored.get('confidence_score')} level={scored.get('confidence_level')}")
 
     # Step 3b: LLM Justification
