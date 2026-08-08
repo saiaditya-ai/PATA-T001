@@ -19,11 +19,11 @@ from self_check.evidence_agent import generate_justification
 
 # Test address: near Tagore Bomma Centre, Arundelpet, Guntur
 payload = {
-  "house_no": "30 118",
-  "locality": "near tagore bomma centre arundelpet",
-  "city": "guntur",
-  "pincode": "522002",
-  "landmark": "Hospital",
+  "house_no": "42-2/1-206/1a",
+  "locality": "3rd right 5th line",
+  "city": "devinagar vijayawada",
+  "pincode": "520003",
+  "landmark": None,
   "direction": None,
   "language_detected": "en"
 }
